@@ -1,0 +1,5 @@
+---
+- hosts: all      # Hosts que o ansible vai utilizar
+  tasks:          # Lista de comandos
+    - shell: 'echo helo world > /home/$USER/arquivo.txt'
+
