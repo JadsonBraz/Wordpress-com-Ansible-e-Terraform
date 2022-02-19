@@ -13,6 +13,18 @@ variable "cdirs_acesso_ssh" {
     default = ["0.0.0.0/0"]
 }
 
+variable "cdirs_acesso_http" {
+    type = list
+
+    default = ["0.0.0.0/0"] 
+}
+
+variable "cdirs_acesso_internet" {
+    type = list
+
+    default = ["0.0.0.0/0"] 
+}
+
 variable "key_name" {
     default = "terraform-aws"
 }
