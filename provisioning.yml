@@ -1,26 +1,53 @@
 ---
-- hosts: all      # Hosts que o ansible vai utilizar
-  tasks:          # Lista de comandos
+- hosts: all # Hosts que o ansible vai utilizar
+  tasks: # Lista de comandos
     # Escreve hello world em um txt
-    - name: 'Escreva hello world'
-      shell: 'echo helo world >> $HOME/arquivo.txt'
+    # - name: 'Escreva hello world'
+    #   shell: 'echo helo world >> $HOME/arquivo.txt'
 
-    # Instalar todas as dependencias
-    - name: 'Instala todas as dependencias'
-      apt: 
+    - name: "Instala todas as dependencias"
+      apt:
         name: "{{ item }}"
-        state: latest         # estado desejado da execução da task. Toda task é checado um estado. nesse caso ele vai instalar o php5 mais novo
-        update_cache: yes       # atualizar o cache do apt (apt update)
-      become: yes             # fazer como usuario root
+        state: latest # estado desejado da execução da task. Toda task é checado um estado. nesse caso ele vai instalar o php5 mais novo
+        update_cache: yes # atualizar o cache do apt (apt update)
+      become: yes # fazer como usuario root
       with_items:
         - php7.2
         - apache2
-        - libapache2-mod-php7.2   # Modulo de integracao entre o php e o apache
+        - libapache2-mod-php7.2 # Modulo de integracao entre o php e o apache
         - php7.2-gd
         # - libssh2-php
         # - php5-mcrypt
         - mcrypt
         - mysql-server-5.7
-        - python-mysqldb
+        # - python-mysqldb
+        - python3-mysqldb
         - php7.2-mysql
+        - python3-pip
 
+    # Instalar o python-mysql; requerido pelo ansible para conectar com o mysql
+    - name: "Instala o modulo pymysql"
+      pip:
+        name:
+          - pymysql
+        state: latest
+      become: yes
+
+    - name: "Cria o banco no MySQL"
+      mysql_db:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: wordpress_db # nome do banco
+        login_user: root # usuario do banco
+        # login_password: senha_do_banco
+        state: present # criar o banco. present, absent, dump, import
+      become: yes
+
+    - name: "Cria o usuario do MySQL"
+      mysql_user:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: wordpress_user
+        login_user: root
+        # password: senha_do_usuario
+        priv: "wordpress_db.*:ALL"
+        state: present
+      become: yes
