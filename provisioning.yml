@@ -1,5 +1,28 @@
 ---
 - hosts: all      # Hosts que o ansible vai utilizar
   tasks:          # Lista de comandos
-    - shell: 'echo helo world > /home/$USER/arquivo.txt'
-
+      # Escreve hello world em um txt
+    - name: 'Escreva hello world'
+      shell: 'echo helo world >> $HOME/arquivo.txt'
+      # Atualiza a lista de repos
+    - name: 'atualizar lista de repositorios'
+      shell: 'apt update'
+      become: yes       # fazer como usuario root
+      # Instala o php 7.2
+    - name: 'Instalação do PHP 7.2' 
+      apt:
+        name: php7.2
+        state: latest      # estado desejado da execução da task. Toda task é checado um estado. nesse caso ele vai instalar o php5 mais novo
+      become: yes
+    # Instala o Apache
+    - name: 'Instalacao do apache'
+      apt:
+          name: apache2
+          state: latest
+      become: yes
+    # Modulo de integracao entre o php e o apache
+    - name: 'Instala o mod-php'
+      apt:
+          name: libapache2-mod-php7.2
+          state: latest
+      become: yes
