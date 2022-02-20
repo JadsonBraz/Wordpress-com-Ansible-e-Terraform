@@ -1,0 +1,51 @@
+---
+- name: "Instala todas as dependencias"
+  apt:
+    name: "{{ item }}"
+    state: latest # estado desejado da execução da task. Toda task é checado um estado. nesse caso ele vai instalar o php5 mais novo
+    update_cache: yes # atualizar o cache do apt (apt update)
+  become: yes # fazer como usuario root
+  with_items:
+    - mysql-server-5.7
+    # - python-mysqldb
+    - python3-mysqldb
+    - python3-pip
+
+# Instalar o python-mysql; requerido pelo ansible para conectar com o mysql
+- name: "Instala o modulo pymysql"
+  pip:
+    name:
+      - pymysql
+    state: latest
+  become: yes
+
+- name: "Cria o banco no MySQL"
+  mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ wp_db_name }}" # nome do banco
+    login_user: root # usuario do banco
+    # login_password: senha_do_banco
+    state: present # criar o banco. present, absent, dump, import
+  become: yes
+
+- name: "Cria o usuario do MySQL"
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ wp_db_user }}"
+    login_user: root
+    password: "{{ wp_db_pass }}"
+    priv: "{{ wp_db_name }}.*:ALL"
+    state: present
+    host: "{{ item }}"
+  become: yes
+  with_items:
+    - "{{ wp_host_ip }}" # ip do servidor que possui o wordpress
+
+# Aceitar conexoes remotas
+- name: "Copia o arquivo mysqld.cnf"
+  copy:
+    src: "files/mysqld.cnf"
+    dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+  become: yes
+  notify:
+    - restart mysql

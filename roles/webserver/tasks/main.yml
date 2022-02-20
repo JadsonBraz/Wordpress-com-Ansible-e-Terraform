@@ -1,0 +1,16 @@
+---
+- name: "Instala todas as dependencias"
+  apt:
+    name: "{{ item }}"
+    state: latest # estado desejado da execução da task. Toda task é checado um estado. nesse caso ele vai instalar o php5 mais novo
+    update_cache: yes # atualizar o cache do apt (apt update)
+  become: yes # fazer como usuario root
+  with_items:
+    - php7.2
+    - apache2
+    - libapache2-mod-php7.2 # Modulo de integracao entre o php e o apache
+    - php7.2-gd
+    # - libssh2-php
+    # - php5-mcrypt
+    - mcrypt
+    - php7.2-mysql
