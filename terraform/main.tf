@@ -47,6 +47,5 @@ resource "aws_instance" "mysql" {
 
   vpc_security_group_ids = [
     "${aws_security_group.acesso-ssh.id}",
-    "${aws_security_group.acesso-http.id}"
   ]
 }
