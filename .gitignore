@@ -6,5 +6,6 @@ terraform/.terraform/
 terraform/terraform.tfstate.backup
 terraform/*.pub
 terraform/terraform.tfstate
+terraform/.terraform.tfstate.lock.info
 
 hosts
