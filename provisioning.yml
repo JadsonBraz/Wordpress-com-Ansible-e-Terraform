@@ -31,7 +31,7 @@
     - name: "Cria o banco no MySQL"
       mysql_db:
         login_unix_socket: /var/run/mysqld/mysqld.sock
-        name: wordpress_db # nome do banco
+        name: "{{ wp_db_name }}" # nome do banco
         login_user: root # usuario do banco
         # login_password: senha_do_banco
         state: present # criar o banco. present, absent, dump, import
@@ -40,17 +40,17 @@
     - name: "Cria o usuario do MySQL"
       mysql_user:
         login_unix_socket: /var/run/mysqld/mysqld.sock
-        name: wordpress_user
+        name: "{{ wp_db_user }}"
         login_user: root
-        password: "12345"
-        priv: "wordpress_db.*:ALL"
+        password: "{{ wp_db_pass }}"
+        priv: "{{ wp_db_name }}.*:ALL"
         state: present
         host: "{{ item }}"
       become: yes
       with_items:
         - "localhost"
         - "127.0.0.1"
-        - "172.31.88.213" # ip do servidor que possui o wordpress
+        - "{{ wp_host_ip }}" # ip do servidor que possui o wordpress
 
     # Aceitar conexoes remotas
     - name: "Copia o arquivo mysqld.cnf"
@@ -107,27 +107,27 @@
 
     - name: "copia wp-config"
       copy:
-        src: "/var/www/wordpress/wp-config-sample.php"
-        dest: "/var/www/wordpress/wp-config.php"
+        src: "{{ wp_install_dir }}/wp-config-sample.php"
+        dest: "{{ wp_install_dir }}/wp-config.php"
         remote_src: yes
       become: yes
 
     - name: "Configura variaveis do wp-config"
       replace:
-        path: "/var/www/wordpress/wp-config.php"
+        path: "{{ wp_install_dir }}/wp-config.php"
         regexp: "{{ item.regex }}"
         replace: "{{ item.value }}"
         backup: yes
       with_items:
-        - { regex: "database_name_here", value: "wordpress_db" }
-        - { regex: "username_here", value: "wordpress_user" }
-        - { regex: "password_here", value: "12345" }
-        - { regex: "localhost", value: "172.31.89.103" } # ip privado da instancia que possui o banco
+        - { regex: "database_name_here", value: "{{ wp_db_name }}" }
+        - { regex: "username_here", value: "{{ wp_db_user }}" }
+        - { regex: "password_here", value: "{{ wp_db_pass }}" }
+        - { regex: "localhost", value: "{{ wp_db_ip }}" } # ip privado da instancia que possui o banco
       become: yes
 
     - name: "Copia o arquivo de configuracao do apache"
-      copy:
-        src: "files/000-default.conf"
+      template:
+        src: "templates/000-default.conf.j2"
         dest: "/etc/apache2/sites-available/000-default.conf"
         # remote_src: no
       become: yes
